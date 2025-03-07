@@ -1,12 +1,38 @@
 import pytesseract
+import sys
+import os
+import logging
+from pathlib import Path
 from PIL import ImageGrab
-import re
 import pyperclip
 import tkinter.messagebox as messagebox
-import logging
+import re
 
 logging.basicConfig(filename='log.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
+
+def get_tesseract_path():
+    # Проверяем, если программа запущена как скомпилированный .exe
+    if getattr(sys, 'frozen', False):
+        # Получаем путь, где PyInstaller распакует все файлы
+        base_path = sys._MEIPASS
+        # Строим путь к tesseract.exe, который будет встроен в .exe
+        tesseract_path = os.path.join(base_path, "Tesseract-OCR", "tesseract.exe")
+    else:
+        # Если программа не скомпилирована, используем путь из текущей папки
+        base_path = Path(__file__).resolve().parent
+        tesseract_path = os.path.join(base_path, "Tesseract-OCR", "tesseract.exe")
+
+    # Проверяем, существует ли файл tesseract.exe
+    if os.path.exists(tesseract_path):
+        logging.info(f"Используется встроенный Tesseract: {tesseract_path}")
+        return tesseract_path
+    else:
+        logging.warning("Tesseract не найден, используется системный путь.")
+        return "tesseract"  # Если tesseract не найден, будет использоваться глобальная установка.
+
+# Устанавливаем путь к tesseract в pytesseract
+pytesseract.pytesseract.tesseract_cmd = get_tesseract_path()
 
 def get_image_from_clipboard():
     image = ImageGrab.grabclipboard()
