@@ -17,6 +17,6 @@
 :)
 
 
-вАЖНО!!
+ВАЖНО!!
 
 До версии 1.2 требовался установленный tesseract_OCR (https://github.com/UB-Mannheim/tesseract), теперь же он вшит в программу.
