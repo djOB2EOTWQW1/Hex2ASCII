@@ -3,7 +3,7 @@ import sys
 import os
 import logging
 from pathlib import Path
-from PIL import ImageGrab
+from PIL import Image, ImageGrab
 import pyperclip
 import tkinter.messagebox as messagebox
 import re
@@ -12,26 +12,20 @@ logging.basicConfig(filename='log.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def get_tesseract_path():
-    # Проверяем, если программа запущена как скомпилированный .exe
     if getattr(sys, 'frozen', False):
-        # Получаем путь, где PyInstaller распакует все файлы
         base_path = sys._MEIPASS
-        # Строим путь к tesseract.exe, который будет встроен в .exe
         tesseract_path = os.path.join(base_path, "Tesseract-OCR", "tesseract.exe")
     else:
-        # Если программа не скомпилирована, используем путь из текущей папки
         base_path = Path(__file__).resolve().parent
         tesseract_path = os.path.join(base_path, "Tesseract-OCR", "tesseract.exe")
 
-    # Проверяем, существует ли файл tesseract.exe
     if os.path.exists(tesseract_path):
         logging.info(f"Используется встроенный Tesseract: {tesseract_path}")
         return tesseract_path
     else:
         logging.warning("Tesseract не найден, используется системный путь.")
-        return "tesseract"  # Если tesseract не найден, будет использоваться глобальная установка.
+        return "tesseract"
 
-# Устанавливаем путь к tesseract в pytesseract
 pytesseract.pytesseract.tesseract_cmd = get_tesseract_path()
 
 def get_image_from_clipboard():
@@ -43,21 +37,44 @@ def get_image_from_clipboard():
     logging.info("Изображение получено из буфера обмена.")
     return image
 
+def get_image_from_file(file_path):
+    if file_path:
+        try:
+            image = Image.open(file_path)
+            logging.info(f"Изображение загружено из файла: {file_path}")
+            return image
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось открыть файл: {e}")
+            logging.error(f"Не удалось открыть файл: {e}")
+            return None
+    return None
+
 def extract_hex_from_image(image):
     text = pytesseract.image_to_string(image)
     logging.info(f"Извлеченный текст: {text}")
-    
-    hex_values = re.findall(r'[0-9A-Fa-f]+', text)
-    logging.info(f"Шестнадцатеричные значения: {hex_values}")
-    
-    return hex_values
+
+    OCR_REPLACEMENTS = {"O": "6", "G": "6"}
+    processed_text = text.upper()
+    for wrong_char, correct_char in OCR_REPLACEMENTS.items():
+        processed_text = processed_text.replace(wrong_char, correct_char)
+
+    hex_groups = re.findall(r"[0-9A-F]+", processed_text)
+    valid_pairs = [
+        pair
+        for group in hex_groups
+        for pair in (
+            [f"0{group}"[:2]] if len(group) % 2 != 0 
+            else [group[i:i+2] for i in range(0, len(group), 2)]
+        )
+        if group
+    ]
+
+    logging.info(f"Шестнадцатеричные пары: {valid_pairs}")
+    return valid_pairs
 
 def hex_to_ascii(hex_values):
     ascii_text = ""
     for hex_value in hex_values:
-        if len(hex_value) == 1:
-            hex_value = '6' + hex_value.upper()
-        
         try:
             ascii_char = bytes.fromhex(hex_value).decode('ascii')
             ascii_text += ascii_char
