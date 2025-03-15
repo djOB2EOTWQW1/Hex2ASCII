@@ -9,7 +9,7 @@ if getattr(sys, 'frozen', False):
     deeplx_path = os.path.join(sys._MEIPASS, "deeplx.exe")
 else:
     deeplx_path = os.path.join(os.path.dirname(__file__), "deeplx.exe")
-start_deeplx_server(deeplx_path)
+deeplx_process = subprocess.Popen([deeplx_path], creationflags=subprocess.CREATE_NO_WINDOW)
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -66,6 +66,14 @@ def copy_result():
 root = ctk.CTk()
 root.title("Hex2ASCII с DeepLX")
 root.geometry("600x600")
+
+def on_closing():
+    if 'deeplx_process' in globals():
+        deeplx_process.terminate()
+    root.destroy()
+    sys.exit(0)
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 process_clipboard_button = ctk.CTkButton(master=root, text="Обработать скриншот", 
                                          command=lambda: process_image("clipboard"), 
