@@ -12,7 +12,7 @@
 Важно!
 
 До версии 1.2 требовалось установить 
-[tesseract_OCR](https://github.com/UB-Mannheim/tesseract) для работы.
+[tesseract_OCR](https://github.com/tesseract-ocr/tesseract) для работы.
 
 Известные проблемы
 
