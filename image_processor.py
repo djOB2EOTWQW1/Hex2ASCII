@@ -20,7 +20,6 @@ def start_deeplx_server(deeplx_path):
         messagebox.showerror("Ошибка", f"Не удалось запустить DeepLX сервер: {e}")
 
 def get_tesseract_path():
-    """Определяет путь к Tesseract OCR."""
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
         tesseract_path = os.path.join(base_path, "Tesseract-OCR", "tesseract.exe")
@@ -82,7 +81,6 @@ def hex_to_ascii(hex_values):
     return ascii_text
 
 def translate_text_deeplx(text, source_lang='en', target_lang='ru'):
-    """Переводит текст через DeepLX API."""
     url = "http://localhost:1188/translate"
     payload = {
         "text": text,
