@@ -1,25 +1,131 @@
-Сделан для LIL. Упрощает конвертацию Hex to ASCII.
+# Hex2ASCII
 
-Порядок действий:
-1. Сделать скриншот непосредственно шестнадцатеричной строки. ![image](https://github.com/user-attachments/assets/b1abcc54-1c57-4478-83c2-3170085bbdff)
-2. Нажать "обработать скриншот" (скриншот должен быть первым в буфере обмена)
-3. Получить ASCII текст.
+Hex2ASCII reads an image of a hexadecimal string and decodes it to ASCII text
+using Tesseract OCR. On Linux the app uses a PySide6 (Qt) interface with
+Material You theming; on Windows it uses a CustomTkinter interface with
+Tesseract bundled in the executable. Both backends share the same multi-pass
+OCR engine that tries multiple image pre-processing variants and Tesseract PSM
+modes to maximise recognition accuracy.
 
-61 6d 20 69 20 6f 6b 61 79
+---
 
-:)
+## Install
 
-Важно!
+Download the artifact for your platform from the
+[GitHub Releases](../../releases) page.
 
-До версии 1.2 требовалось установить 
-[tesseract_OCR](https://github.com/tesseract-ocr/tesseract) для работы.
+### Windows
 
-Известные проблемы
+Download **`Hex2ASCII.exe`** — Tesseract is bundled inside; no separate
+install is needed. Double-click to run.
 
-Программа использует стандартную кодировку ASCII, которая поддерживает только символы в пределах диапозона 0-127, что включает в себя только английский алфавит и некоторые другие символы.
+### Arch Linux / CachyOS / Manjaro
 
-Шестнадцатеричная строка, если фон неоднотонный, может не конвертироваться.
+```
+sudo pacman -U hex2ascii-*.pkg.tar.zst
+```
 
-Могут быть квадратики вместо буквы / пропущенная буква / не та буква, которая должна быть.
+### Debian / Ubuntu
 
-В таком случае рекомендую забить / сделать скриншот еще раз.
+```
+sudo apt install ./hex2ascii_2.0.0_all.deb
+```
+
+### Generic Linux (AppImage)
+
+```
+chmod +x Hex2ASCII-x86_64.AppImage
+./Hex2ASCII-x86_64.AppImage
+```
+
+---
+
+## Linux system requirements
+
+The Linux builds depend on **system packages**, not bundled libraries. Install
+them before running:
+
+| Dependency | Arch / CachyOS | Debian / Ubuntu |
+|---|---|---|
+| Tesseract OCR binary | `tesseract` | `tesseract-ocr` |
+| PySide6 (Qt bindings) | `python-pyside6` | `python3-pyside6` |
+| Pillow | `python-pillow` | `python3-pil` |
+| numpy | `python-numpy` | `python3-numpy` |
+| pytesseract | `python-pytesseract` | `python3-pytesseract` |
+
+If any dependency is missing, the app prints an English message to stderr that
+lists exactly which packages to install and the command to run — for example:
+
+```
+Missing required packages: tesseract, python-pyside6
+Install them with:
+    sudo pacman -S tesseract python-pyside6
+```
+
+---
+
+## Theming (Linux)
+
+The Qt frontend reads Material You colors from:
+
+```
+~/.local/state/quickshell/user/generated/colors.json
+```
+
+This path is the output location used by
+[matugen](https://github.com/InioX/matugen) /
+[illogical-impulse](https://github.com/end-4/dots-hyprland). When that file
+changes on disk the app recolors itself live without restarting.
+
+Override the path with the `HEX2ASCII_COLORS` environment variable:
+
+```
+HEX2ASCII_COLORS=/path/to/my-colors.json python app.py
+```
+
+If the file is absent or unreadable the app falls back to a built-in dark
+theme automatically.
+
+---
+
+## Run from source
+
+```bash
+pip install -r requirements-linux.txt   # Linux
+# or
+pip install -r requirements-win.txt     # Windows
+
+python app.py
+```
+
+Pass `--backend qt` or `--backend ctk` to force a specific GUI backend
+(default: `qt` on Linux, `ctk` on Windows).
+
+---
+
+## Build from source
+
+All four packages are built automatically by GitHub Actions when a `v*` tag is
+pushed. To build locally:
+
+| Target | Command |
+|---|---|
+| AppImage (Linux) | `bash build/build_appimage.sh` |
+| Arch package | `cd build && makepkg` (uses `build/PKGBUILD`) |
+| Debian package | `bash build/build_deb.sh` |
+| Windows EXE | `python build/build_exe.py` (run on Windows) |
+
+---
+
+## Usage
+
+1. Take a screenshot of a hexadecimal string to your clipboard, or have an
+   image file ready.
+2. Click **"Process clipboard"** to decode the clipboard image, or click
+   **"Open image…"** to pick a file from disk.
+3. The decoded ASCII text appears in the result box.
+4. Click **"Copy result"** to copy it to the clipboard.
+
+The OCR engine runs multiple pre-processing passes (grayscale upscale, Otsu
+binarisation, inversion) combined with several Tesseract PSM modes and picks
+the candidate that scores highest as a valid hex string.
