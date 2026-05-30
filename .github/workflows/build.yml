@@ -12,23 +12,23 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -r requirements-win.txt
-      - name: Fetch portable Tesseract
+      - name: Install Tesseract (Chocolatey)
         shell: pwsh
         run: |
-          # Use curl.exe explicitly: in PowerShell, "curl" is an alias for
-          # Invoke-WebRequest and does not accept -L/-o.
-          # UB-Mannheim hosts the installers on its own mirror, not on GitHub
-          # releases; --fail makes curl exit non-zero on an HTTP 404 instead of
-          # writing an error page to tess.exe.
-          $expected = 'c885fff6998e0608ba4bb8ab51436e1c6775c2bafc2559a19b423e18678b60c9'
-          curl.exe -fL -o tess.exe https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.4.0.20240606.exe
-          # Pin by SHA256 and verify before extracting (supply-chain integrity).
-          $actual = (Get-FileHash tess.exe -Algorithm SHA256).Hash.ToLower()
-          if ($actual -ne $expected) {
-            Write-Error "Tesseract installer hash mismatch: expected $expected, got $actual"
+          # Install via Chocolatey (preinstalled on windows-latest). It is reliable
+          # from CI IPs (the UB-Mannheim mirror returns HTTP 403 to datacenter IPs)
+          # and Chocolatey verifies the package checksum itself (supply-chain
+          # integrity). The package installs English + OSD language data.
+          choco install tesseract --no-progress -y
+          $src = "C:\Program Files\Tesseract-OCR"
+          if (-not (Test-Path "$src\tesseract.exe")) {
+            Write-Error "Tesseract not found at $src after choco install"
             exit 1
           }
-          7z x tess.exe -obuild/Tesseract-OCR -y
+          New-Item -ItemType Directory -Force -Path build\Tesseract-OCR | Out-Null
+          Copy-Item -Recurse -Force "$src\*" build\Tesseract-OCR\
+          # Sanity-check the bundled binary and that English data is present.
+          & "build\Tesseract-OCR\tesseract.exe" --list-langs
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
         with: { name: Hex2ASCII-exe, path: build/dist/Hex2ASCII.exe }
