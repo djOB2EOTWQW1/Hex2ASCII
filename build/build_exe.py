@@ -47,8 +47,11 @@ def _normalize_tesseract() -> Path:
 
 def main():
     _normalize_tesseract()
+    # NOTE: do not pass --onefile here. When a .spec file is given, PyInstaller
+    # rejects makespec-only options like --onefile; onefile mode is already defined
+    # by the EXE()/lack of COLLECT() in hex2ascii.spec.
     subprocess.check_call(
-        [sys.executable, "-m", "PyInstaller", "--onefile", "--noconfirm",
+        [sys.executable, "-m", "PyInstaller", "--noconfirm",
          str(HERE / "hex2ascii.spec")],
         cwd=str(HERE),
     )

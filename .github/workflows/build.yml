@@ -15,8 +15,10 @@ jobs:
       - name: Fetch portable Tesseract
         shell: pwsh
         run: |
-          curl -L -o tess.exe https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3.20231005/tesseract-ocr-w64-setup-5.3.3.20231005.exe
-          7z x tess.exe -obuild/Tesseract-OCR
+          # Use curl.exe explicitly: in PowerShell, "curl" is an alias for
+          # Invoke-WebRequest and does not accept -L/-o.
+          curl.exe -L -o tess.exe https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3.20231005/tesseract-ocr-w64-setup-5.3.3.20231005.exe
+          7z x tess.exe -obuild/Tesseract-OCR -y
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
         with: { name: Hex2ASCII-exe, path: build/dist/Hex2ASCII.exe }
@@ -49,7 +51,7 @@ jobs:
           useradd -m builder
           cp -r . /home/builder/src
           chown -R builder /home/builder/src
-          su builder -c "cd /home/builder/src/build && makepkg -f"
+          su builder -c "cd /home/builder/src/build && makepkg -f --nodeps"
           cp /home/builder/src/build/*.pkg.tar.zst .
       - uses: actions/upload-artifact@v4
         with: { name: Hex2ASCII-arch, path: "*.pkg.tar.zst" }
