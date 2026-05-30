@@ -17,7 +17,10 @@ jobs:
         run: |
           # Use curl.exe explicitly: in PowerShell, "curl" is an alias for
           # Invoke-WebRequest and does not accept -L/-o.
-          curl.exe -L -o tess.exe https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3.20231005/tesseract-ocr-w64-setup-5.3.3.20231005.exe
+          # UB-Mannheim hosts the installers on its own mirror, not on GitHub
+          # releases; --fail makes curl exit non-zero on an HTTP 404 instead of
+          # writing an error page to tess.exe.
+          curl.exe -fL -o tess.exe https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.5.0.20241111.exe
           7z x tess.exe -obuild/Tesseract-OCR -y
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
