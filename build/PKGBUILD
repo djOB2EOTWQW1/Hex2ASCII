@@ -5,7 +5,7 @@ pkgdesc="Decode hex strings from images via Tesseract OCR"
 arch=('x86_64')
 url="https://github.com/djOB2EOTWQW1/Hex2ASCII"
 license=('MIT')
-depends=('tesseract' 'python-pyside6' 'python-pillow' 'python-numpy' 'python-pytesseract')
+depends=('tesseract' 'tesseract-data-eng' 'python-pyside6' 'python-pillow' 'python-numpy' 'python-pytesseract')
 source=()
 
 package() {

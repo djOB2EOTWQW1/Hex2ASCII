@@ -2,11 +2,13 @@
 
 import importlib.util
 import shutil
+import subprocess
 from pathlib import Path
 
 PACKAGE_NAMES = {
     "pacman": {
         "tesseract": "tesseract",
+        "eng_data": "tesseract-data-eng",
         "PySide6": "python-pyside6",
         "PIL": "python-pillow",
         "pytesseract": "python-pytesseract",
@@ -14,6 +16,7 @@ PACKAGE_NAMES = {
     },
     "apt": {
         "tesseract": "tesseract-ocr",
+        "eng_data": "tesseract-ocr-eng",
         "PySide6": "python3-pyside6",
         "PIL": "python3-pil",
         "pytesseract": "python3-pytesseract",
@@ -21,6 +24,7 @@ PACKAGE_NAMES = {
     },
     "dnf": {
         "tesseract": "tesseract",
+        "eng_data": "tesseract-langpack-eng",
         "PySide6": "python3-pyside6",
         "PIL": "python3-pillow",
         "pytesseract": "python3-pytesseract",
@@ -64,11 +68,29 @@ def detect_package_manager() -> str:
     return "apt"
 
 
+def _has_english_langdata() -> bool:
+    """Return True if Tesseract reports English ('eng') training data."""
+    try:
+        out = subprocess.run(
+            ["tesseract", "--list-langs"],
+            capture_output=True, text=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    langs = out.stdout.splitlines() + out.stderr.splitlines()
+    return any(line.strip() == "eng" for line in langs)
+
+
 def check_dependencies() -> list[str]:
     """Return logical names of missing dependencies (empty list = all present)."""
     missing = []
     if shutil.which("tesseract") is None:
+        # No binary means no language data either; report both so the user installs
+        # everything in one go.
         missing.append("tesseract")
+        missing.append("eng_data")
+    elif not _has_english_langdata():
+        missing.append("eng_data")
     for mod in _PY_MODULES:
         if importlib.util.find_spec(mod) is None:
             missing.append(mod)

@@ -16,3 +16,9 @@ def test_format_missing_message_apt():
 def test_detect_package_manager_returns_known(monkeypatch):
     monkeypatch.setattr("core.deps._os_release_id", lambda: "arch")
     assert detect_package_manager() == "pacman"
+
+
+def test_eng_data_maps_to_language_package_per_manager():
+    assert "tesseract-data-eng" in format_missing_message(["eng_data"], manager="pacman")
+    assert "tesseract-ocr-eng" in format_missing_message(["eng_data"], manager="apt")
+    assert "tesseract-langpack-eng" in format_missing_message(["eng_data"], manager="dnf")
