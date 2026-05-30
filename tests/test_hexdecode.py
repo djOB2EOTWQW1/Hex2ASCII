@@ -8,3 +8,21 @@ def test_correct_ocr_preserves_real_hex_letters():
 
 def test_correct_ocr_b_maps_to_8_only_when_not_hex_context():
     assert correct_ocr("0B") == "0B"
+
+
+from core.hexdecode import extract_hex
+
+def test_extract_hex_continuous_stream():
+    assert extract_hex("48656c6c6f") == "48656c6c6f"
+
+def test_extract_hex_space_separated():
+    assert extract_hex("48 65 6c 6c 6f") == "48656c6c6f"
+
+def test_extract_hex_strips_0x_prefix():
+    assert extract_hex("0x48 0x65") == "4865"
+
+def test_extract_hex_drops_trailing_odd_nibble():
+    assert extract_hex("4865 6") == "4865"
+
+def test_extract_hex_ignores_non_hex_noise():
+    assert extract_hex("hex: 48,65;") == "4865"
