@@ -20,7 +20,14 @@ jobs:
           # UB-Mannheim hosts the installers on its own mirror, not on GitHub
           # releases; --fail makes curl exit non-zero on an HTTP 404 instead of
           # writing an error page to tess.exe.
+          $expected = 'c885fff6998e0608ba4bb8ab51436e1c6775c2bafc2559a19b423e18678b60c9'
           curl.exe -fL -o tess.exe https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.4.0.20240606.exe
+          # Pin by SHA256 and verify before extracting (supply-chain integrity).
+          $actual = (Get-FileHash tess.exe -Algorithm SHA256).Hash.ToLower()
+          if ($actual -ne $expected) {
+            Write-Error "Tesseract installer hash mismatch: expected $expected, got $actual"
+            exit 1
+          }
           7z x tess.exe -obuild/Tesseract-OCR -y
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
