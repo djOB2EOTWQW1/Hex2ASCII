@@ -1,0 +1,5 @@
+#!/bin/bash
+HERE="$(dirname "$(readlink -f "${0}")")"
+export PYTHONPATH="${HERE}/usr/share/hex2ascii:${PYTHONPATH}"
+# Dependencies are NOT bundled; rely on the system python3 and packages.
+exec python3 "${HERE}/usr/share/hex2ascii/app.py" --backend qt "$@"

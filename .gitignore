@@ -1,0 +1,27 @@
+# Build artifacts
+*.AppImage
+*.pkg.tar.zst
+*.pkg.tar.xz
+*.deb
+dist/
+pkg/
+src/
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+
+# PyInstaller
+build/Hex2ASCII/
+build/dist/
+build/__pycache__/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Temp/editor
+*.swp
+*.swo
+.DS_Store

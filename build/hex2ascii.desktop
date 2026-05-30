@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Hex2ASCII
+Exec=hex2ascii
+Icon=hex2ascii
+Categories=Utility;
+Terminal=false
