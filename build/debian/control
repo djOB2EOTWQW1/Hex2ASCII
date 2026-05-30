@@ -1,0 +1,9 @@
+Package: hex2ascii
+Version: 2.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3, tesseract-ocr, python3-pyside6, python3-pil, python3-numpy, python3-pytesseract
+Maintainer: djOB2EOTWQW1 <noreply@example.com>
+Description: Decode hex strings from images via Tesseract OCR
+ Hex2ASCII reads an image of a hexadecimal string and decodes it to ASCII text.
