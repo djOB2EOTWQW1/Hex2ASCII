@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+from PySide6.QtCore import QFileSystemWatcher, QObject, Signal
+
 DEFAULT_COLORS_PATH = os.path.expanduser(
     "~/.local/state/quickshell/user/generated/colors.json"
 )
@@ -70,3 +72,25 @@ def build_qss(colors: dict) -> str:
     QLabel#title {{ font-size: 20px; font-weight: 700; color: {c['primary']}; }}
     QFrame#card {{ background-color: {c['surface_container']}; border-radius: 16px; }}
     """
+
+
+class ThemeWatcher(QObject):
+    """Watches the matugen colors file and emits new QSS when it changes."""
+
+    changed = Signal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._path = colors_path()
+        self._watcher = QFileSystemWatcher(self)
+        if Path(self._path).exists():
+            self._watcher.addPath(self._path)
+        self._watcher.fileChanged.connect(self._on_changed)
+
+    def current_qss(self) -> str:
+        return build_qss(load_colors(self._path))
+
+    def _on_changed(self, _path: str):
+        if Path(self._path).exists() and self._path not in self._watcher.files():
+            self._watcher.addPath(self._path)
+        self.changed.emit(self.current_qss())
