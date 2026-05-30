@@ -43,3 +43,17 @@ def test_decode_high_bytes_preserved_via_utf8_or_latin1():
 def test_decode_empty_string():
     r = decode("")
     assert r.text == ""
+
+
+from core.hexdecode import score, decode_text
+
+def test_score_prefers_clean_hex_printable():
+    good = score("48 65 6c 6c 6f")
+    bad = score("zzz qqq !!!")
+    assert good > bad
+
+def test_decode_text_end_to_end():
+    assert decode_text("48 65 6c 6c 6f") == "Hello"
+
+def test_decode_text_applies_correction():
+    assert decode_text("4O") == "@"

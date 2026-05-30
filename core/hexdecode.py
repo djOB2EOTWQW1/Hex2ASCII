@@ -63,3 +63,25 @@ def decode(hex_str: str) -> DecodeResult:
         except UnicodeDecodeError:
             continue
     return DecodeResult(text=raw.decode("latin-1", errors="replace"), encoding="latin-1")
+
+
+def score(text: str) -> float:
+    """Score raw OCR text as a hex candidate: fraction of hex chars times fraction of
+    printable characters after decoding. Higher is better."""
+    corrected = correct_ocr(text)
+    hex_str = extract_hex(corrected)
+    stripped = re.sub(r"\s", "", corrected)
+    if not stripped or not hex_str:
+        return 0.0
+    hex_ratio = len(hex_str) / len(stripped)
+    decoded = decode(hex_str).text
+    if not decoded:
+        return 0.0
+    printable = sum(1 for c in decoded if 32 <= ord(c) < 127 or c in "\t\n\r")
+    printable_ratio = printable / len(decoded)
+    return hex_ratio * printable_ratio
+
+
+def decode_text(text: str) -> str:
+    """Full pipeline for a single OCR string: correct → extract → decode → text."""
+    return decode(extract_hex(correct_ocr(text))).text
