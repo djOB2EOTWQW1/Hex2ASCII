@@ -20,7 +20,7 @@ jobs:
           # UB-Mannheim hosts the installers on its own mirror, not on GitHub
           # releases; --fail makes curl exit non-zero on an HTTP 404 instead of
           # writing an error page to tess.exe.
-          curl.exe -fL -o tess.exe https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.5.0.20241111.exe
+          curl.exe -fL -o tess.exe https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.4.0.20240606.exe
           7z x tess.exe -obuild/Tesseract-OCR -y
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
