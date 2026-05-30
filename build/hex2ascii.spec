@@ -1,10 +1,10 @@
 # build/hex2ascii.spec
 # Bundles the CTK GUI plus a Tesseract-OCR/ directory placed next to this spec by
-# build_exe.py before running PyInstaller.
+# build_exe.py before running PyInstaller. Written for PyInstaller 6.x: bytecode
+# encryption (cipher), PYZ.zipped_data, and EXE.zipfiles were all removed in 6.0.
 import os
 from PyInstaller.utils.hooks import collect_data_files
 
-block_cipher = None
 here = os.path.abspath(os.getcwd())
 
 datas = collect_data_files("customtkinter")
@@ -25,11 +25,10 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[],
     excludes=["PySide6"],
-    cipher=block_cipher,
 )
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 exe = EXE(
-    pyz, a.scripts, a.binaries, a.zipfiles, a.datas, [],
+    pyz, a.scripts, a.binaries, a.datas, [],
     name="Hex2ASCII",
     debug=False, strip=False, upx=True, console=False,
 )
