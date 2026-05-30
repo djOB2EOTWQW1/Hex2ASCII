@@ -33,7 +33,9 @@ def extract_hex(text: str) -> str:
     non-hex words, and drops a trailing unpaired nibble so the result always has
     an even length.
     """
-    no_prefix = re.sub(r"0[xX]", "", text)
+    # Strip ``0x`` only where it is a real prefix (at a word boundary), so interior
+    # sequences like the ``0x`` inside ``a0x1`` are left untouched.
+    no_prefix = re.sub(r"\b0[xX]", "", text)
     # Extract only tokens that consist entirely of hex digits (i.e. not
     # embedded in words that contain non-hex characters like 'h', 'x', etc.)
     tokens = re.findall(r"\b[0-9a-fA-F]+\b", no_prefix)

@@ -27,6 +27,12 @@ def test_extract_hex_drops_trailing_odd_nibble():
 def test_extract_hex_ignores_non_hex_noise():
     assert extract_hex("hex: 48,65;") == "4865"
 
+def test_extract_hex_only_strips_0x_at_prefix():
+    # A real "0x" prefix is stripped, but an interior "0x" is not, so a malformed
+    # token like "a0x1" is rejected rather than turned into a fake byte ("a1").
+    assert extract_hex("0xAB") == "AB"
+    assert extract_hex("a0x1") == ""
+
 
 from core.hexdecode import decode, DecodeResult
 
