@@ -41,3 +41,25 @@ def extract_hex(text: str) -> str:
     if len(digits) % 2 != 0:
         digits = digits[:-1]
     return digits
+
+
+@dataclass
+class DecodeResult:
+    text: str
+    encoding: str
+
+
+def decode(hex_str: str) -> DecodeResult:
+    """Decode a hex string to text, trying ASCII, then UTF-8, then latin-1.
+
+    latin-1 cannot fail, so data is never silently dropped.
+    """
+    if not hex_str:
+        return DecodeResult(text="", encoding="ascii")
+    raw = bytes.fromhex(hex_str)
+    for enc in ("ascii", "utf-8", "latin-1"):
+        try:
+            return DecodeResult(text=raw.decode(enc), encoding=enc)
+        except UnicodeDecodeError:
+            continue
+    return DecodeResult(text=raw.decode("latin-1", errors="replace"), encoding="latin-1")

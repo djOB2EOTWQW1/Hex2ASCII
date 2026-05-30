@@ -26,3 +26,20 @@ def test_extract_hex_drops_trailing_odd_nibble():
 
 def test_extract_hex_ignores_non_hex_noise():
     assert extract_hex("hex: 48,65;") == "4865"
+
+
+from core.hexdecode import decode, DecodeResult
+
+def test_decode_ascii():
+    r = decode("48656c6c6f")
+    assert isinstance(r, DecodeResult)
+    assert r.text == "Hello"
+    assert r.encoding == "ascii"
+
+def test_decode_high_bytes_preserved_via_utf8_or_latin1():
+    r = decode("c3a9")
+    assert r.text == "é"
+
+def test_decode_empty_string():
+    r = decode("")
+    assert r.text == ""
