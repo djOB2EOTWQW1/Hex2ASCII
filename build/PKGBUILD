@@ -1,0 +1,23 @@
+pkgname=hex2ascii
+pkgver=2.0.0
+pkgrel=1
+pkgdesc="Decode hex strings from images via Tesseract OCR"
+arch=('x86_64')
+url="https://github.com/djOB2EOTWQW1/Hex2ASCII"
+license=('MIT')
+depends=('tesseract' 'python-pyside6' 'python-pillow' 'python-numpy' 'python-pytesseract')
+source=()
+
+package() {
+    install -d "$pkgdir/usr/share/hex2ascii"
+    cp -r "$srcdir/../../app.py" "$srcdir/../../core" "$srcdir/../../gui_qt" \
+        "$srcdir/../../gui_ctk" "$pkgdir/usr/share/hex2ascii/"
+    install -d "$pkgdir/usr/bin"
+    cat > "$pkgdir/usr/bin/hex2ascii" <<'EOF'
+#!/bin/sh
+exec python3 /usr/share/hex2ascii/app.py --backend qt "$@"
+EOF
+    chmod 755 "$pkgdir/usr/bin/hex2ascii"
+    install -Dm644 "$srcdir/../../build/hex2ascii.desktop" \
+        "$pkgdir/usr/share/applications/hex2ascii.desktop"
+}
