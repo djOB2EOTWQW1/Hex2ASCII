@@ -15,11 +15,12 @@ jobs:
       - name: Install Tesseract (Chocolatey)
         shell: pwsh
         run: |
-          # Install via Chocolatey (preinstalled on windows-latest). It is reliable
-          # from CI IPs (the UB-Mannheim mirror returns HTTP 403 to datacenter IPs)
-          # and Chocolatey verifies the package checksum itself (supply-chain
-          # integrity). The package installs English + OSD language data.
-          choco install tesseract --no-progress -y
+          # Install via Chocolatey (preinstalled on windows-latest), reliable from
+          # CI IPs (the UB-Mannheim mirror returns HTTP 403 to datacenter IPs).
+          # Pin the exact version and require checksums (fail-closed): choco aborts
+          # if the package's declared download checksum is missing or does not match,
+          # so a tampered upstream binary fails the build instead of shipping.
+          choco install tesseract --version=5.5.0.20241111 --require-checksums --no-progress -y
           $src = "C:\Program Files\Tesseract-OCR"
           if (-not (Test-Path "$src\tesseract.exe")) {
             Write-Error "Tesseract not found at $src after choco install"
@@ -27,7 +28,9 @@ jobs:
           }
           New-Item -ItemType Directory -Force -Path build\Tesseract-OCR | Out-Null
           Copy-Item -Recurse -Force "$src\*" build\Tesseract-OCR\
-          # Sanity-check the bundled binary and that English data is present.
+          # Log the bundled binary hash for auditability and confirm it runs with
+          # English language data present.
+          (Get-FileHash "build\Tesseract-OCR\tesseract.exe" -Algorithm SHA256).Hash
           & "build\Tesseract-OCR\tesseract.exe" --list-langs
       - run: python build/build_exe.py
       - uses: actions/upload-artifact@v4
